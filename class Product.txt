@@ -1,0 +1,80 @@
+class Product:
+    def __init__(self, name, price):
+        self.name = name
+        self.price = price
+        self.quantity = 0
+
+class ShoppingCart:
+    def __init__(self):
+        self.products = []
+        self.rules = {
+            "flat_10_discount": lambda total: 10 if total > 200 else 0,
+            "bulk_5_discount": lambda price, quantity: 0.05 * price * quantity if quantity > 10 else 0,
+            "bulk_10_discount": lambda total_quantity, total_price: 0.1 * total_price if total_quantity > 20 else 0,
+            "tiered_50_discount": lambda total_quantity, product_quantity, product_price: 0.5 * product_price * (product_quantity - 15) if total_quantity > 30 and product_quantity > 15 else 0
+        }
+
+    def add_product(self, product, quantity, gift_wrap=False):
+        product.quantity = quantity
+        self.products.append((product, gift_wrap))
+
+    def calculate_discount(self):
+        total_quantity = sum(quantity for product, quantity in self.products)
+        total_price = sum(product.price * quantity for product, quantity in self.products)
+        
+        max_discount = 0
+        discount_name = ""
+
+        for rule_name, rule_function in self.rules.items():
+            discount = rule_function(total_quantity, total_price, self.products)
+            if discount > max_discount:
+                max_discount = discount
+                discount_name = rule_name
+
+        return discount_name, max_discount
+
+    def calculate_shipping_fee(self):
+        total_quantity = sum(quantity for product, quantity in self.products)
+        return (total_quantity // 10) * 5
+
+    def calculate_gift_wrap_fee(self):
+        return sum(quantity for product, quantity in self.products if quantity)
+
+    def generate_receipt(self):
+        subtotal = sum(product.price * quantity for product, quantity in self.products)
+        discount_name, discount_amount = self.calculate_discount()
+        shipping_fee = self.calculate_shipping_fee()
+        gift_wrap_fee = self.calculate_gift_wrap_fee()
+        total = subtotal - discount_amount + shipping_fee + gift_wrap_fee
+
+        print("Receipt:")
+        for product, gift_wrap in self.products:
+            print(f"{product.name} - Quantity: {product.quantity} - Total: ${product.price * product.quantity}{' - Gift Wrap Fee: $1' if gift_wrap else ''}")
+
+        print(f"\nSubtotal: ${subtotal}")
+        print(f"Discount Applied ({discount_name}): -${discount_amount}")
+        print(f"Shipping Fee: ${shipping_fee}")
+        print(f"Gift Wrap Fee: ${gift_wrap_fee}")
+        print(f"Total: ${total}")
+
+
+# Example Usage:
+product_a = Product("Product A", 20)
+product_b = Product("Product B", 40)
+product_c = Product("Product C", 50)
+
+cart = ShoppingCart()
+
+quantity_a = int(input(f"Enter quantity for {product_a.name}: "))
+gift_wrap_a = input(f"Is {product_a.name} wrapped as a gift? (yes/no): ").lower() == 'yes'
+cart.add_product(product_a, quantity_a, gift_wrap_a)
+
+quantity_b = int(input(f"Enter quantity for {product_b.name}: "))
+gift_wrap_b = input(f"Is {product_b.name} wrapped as a gift? (yes/no): ").lower() == 'yes'
+cart.add_product(product_b, quantity_b, gift_wrap_b)
+
+quantity_c = int(input(f"Enter quantity for {product_c.name}: "))
+gift_wrap_c = input(f"Is {product_c.name} wrapped as a gift? (yes/no): ").lower() == 'yes'
+cart.add_product(product_c, quantity_c, gift_wrap_c)
+
+cart.generate_receipt()
