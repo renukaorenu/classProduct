@@ -1,0 +1,40 @@
+def calculate_discounted_price(product_price, quantity):
+    # Discount Rules
+    flat_10_discount = 10 if quantity * product_price > 200 else 0
+    bulk_5_discount = 0.05 * product_price * quantity if quantity > 10 else 0
+    bulk_10_discount = 0.1 * product_price * quantity if quantity > 20 else 0
+    tiered_50_discount = 0.5 * product_price * (quantity - 15) if quantity > 30 and quantity - 15 > 0 else 0
+
+    # Applying the most beneficial discount
+    max_discount = max(flat_10_discount, bulk_5_discount, bulk_10_discount, tiered_50_discount)
+
+    return max_discount
+
+def main():
+    products = {"Product A": 20, "Product B": 40, "Product C": 50}
+    total_amount = 0
+    discount_amount = 0
+
+    for product, price in products.items():
+        quantity = int(input(f"Enter the quantity of {product}: "))
+        is_gift_wrapped = input(f"Is {product} wrapped as a gift? (yes/no): ").lower() == "yes"
+        product_total = price * quantity
+        gift_wrap_fee = 1 * quantity if is_gift_wrapped else 0
+        total_amount += product_total + gift_wrap_fee
+
+        discount_amount += calculate_discounted_price(price, quantity)
+
+        print(f"{product} - Quantity: {quantity}, Total Amount: {product_total}")
+
+    # Shipping fee calculation
+    shipping_fee = 5 * ((total_amount // 10) + (1 if total_amount % 10 != 0 else 0))
+
+    # Displaying the details
+    print("\nSummary:")
+    print(f"Subtotal: {total_amount}")
+    print(f"Discount Applied: {discount_amount}")
+    print(f"Shipping Fee: {shipping_fee}")
+    print(f"Total: {total_amount - discount_amount + shipping_fee}")
+
+if __name__ == "__main__":
+    main()
